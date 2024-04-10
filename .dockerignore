@@ -1,2 +1,8 @@
-*ocker*
-log/
+README.md
+LICENCE
+Dockerfile
+.dockerignore
+.gitignore
+.github/
+test/
+Manifest.toml

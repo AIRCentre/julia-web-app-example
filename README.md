@@ -2,15 +2,13 @@
 
 `TLDR;`
 
-This repository is a an example to be used as a tutorial for building a full-stack web application using the Julia programming language. It covers the entire process of deployment, using a very simple sample application to demonstrate the steps involved.
+This repository is a an example to be used as a tutorial for building, packaging and destributing a full-stack web application built with the Julia progrmming language. It covers the process of containerization, utilizing Docker and GitHub Actions, and distribution of the application utilizing Github Container registry (ghcr.io).
 
 ## 1. Overview
 
 In this tutorial, we delve into the process of containerizing a Julia web application utilizing Docker and GitHub Actions, emphasizing the importance of containerization for simplified distribution and deployment. 
 
 Containerization is a process that packages an application along with its dependencies into a single container image, ensuring consistent operation across different computing environments. 
-
-Our application is simple web dashboard developed with GenieFramework.jl, a robust open-source framework designed for creating production-grade, data-driven web apps with Julia. 
 
 GitHub Actions and Docker play very important roles by automating CI/CD workflows, encompassing the build, test, and deploy phases and seamlessly integrating with GitHub Container Registry (ghcr.io), a platform for storing and distributing Docker images.
 
@@ -32,12 +30,14 @@ In order to publish your application to ghcr.io, Github Actions needs to authent
 
 Once we make sure that everything is correctly installed and configured, let's dive in.
 
-### 3.1. Cloning the repository
+### 3.1. Creating a new repository
 
-First, lets clone the repository using Git by runnig the following command:
+First, lets create a new public repository on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
+
+Then, let's clone our new repository by running the following command in the terminal (Important! Replace 'YourUsername' in the URL with your actual GitHub username):
 
 ```bash
-git clone https://github.com/AIRCentre/julia-web-app-example.git
+git clone https://github.com/YourUsername/julia-web-app-example.git
 ```
 
 Then, change directories to move into the project's directory by running the following command:
@@ -51,7 +51,7 @@ To avoid frequent errors having to do with in which directory the commands are r
 
 ### 3.2. Getting familiarized with the Project's structure
 
-Now, lets take a look at the project's file structure and know what is the purpose of each file.
+Now, lets take a look at what files we need to add to the project and what is the purpose of each.
 
 ```plaintext
 .
@@ -62,14 +62,12 @@ Now, lets take a look at the project's file structure and know what is the purpo
 │   └── workflows
 │       └── ci.yml
 ├── .gitignore
-├── lib
-│   └── StatisticAnalysis.jl
 ├── LICENSE
 ├── Project.toml
 ├── README.md
 └── test
     ├── runtests.jl
-    └── test_statistic_analysis.jl
+    └── test_example.jl
 ```
 
 - **app.jl** - Main Julia application file. It contains the primary logic for the application's execution.
@@ -82,8 +80,6 @@ Now, lets take a look at the project's file structure and know what is the purpo
 
 - **.gitignore** - Specifies files and directories Git should ignore, helping to keep the repository clean by excluding temporary files, dependencies, or sensitive information.
 
-- **lib/StatisticAnalysis.jl** - A Julia module within the `lib` directory with simple functions.
-
 - **LICENSE** - The software license under which the project is distributed.
 
 - **Project.toml** - Julia's package manager configuration file that specifies project dependencies.
@@ -92,81 +88,226 @@ Now, lets take a look at the project's file structure and know what is the purpo
 
 - **test/runtests.jl** - Orchestrates the execution of the project's automated tests.
 
-- **test/test_statistic_analysis.jl** - Contains tests for the `StatisticAnalysis.jl` module.
+- **test/test_example.jl** - Contains a dummy test to exemplify how tests are declared.
 
-### 3.3. Running the Julia application
+### 3.3. The Julia application
 
-Let's run the Julia application locally to see if its working correctly by folowing these steps:
+We will start by adding the Julia application to our project, installing its dependencies and running it to see if everything works. 
 
-1. **Installing the application dependancies:**<br>
-   Run the folowing commands to download, install and precompile the application's dependencies.
-   ``` bash
-   julia --project -e "using Pkg; Pkg.instantiate(); Pkg.precompile();"
+Let's do it by following these steps:
+
+1. **Creating the `app.jl` file:**<br>
+
+   Let's create a new file named `app.jl` at the root of your repository. It should contain the following code:
+
+   ```julia
+   # ./app.jl
+
+   using Dash
+
+   app = dash()
+
+   app.layout = html_div() do
+      html_h1("Hello Dash"),
+      html_div("Dash.jl: Julia interface for Dash"),
+      dcc_graph(id = "example-graph",
+               figure = (
+                     data = [
+                        (x = [1, 2, 3], y = [4, 1, 2], type = "bar", name = "Data1"),
+                        (x = [1, 2, 3], y = [2, 4, 5], type = "bar", name = "Data2"),
+                     ],
+                     layout = (title = "Dash Data Visualization",)
+               ))
+   end
+
+   run_server(app, "0.0.0.0", 8080)
    ```
-   Lets breakdown this command to see what it does:
-   - `julia`: Starts the Julia program.
-   - `--project`: Specifies to use the project environment from the `Project.toml` file.
-   - `-e`: Executes the following Julia code as a script:
-     - `using Pkg;`: Loads Julia's package manager.
-     - `Pkg.instantiate();`: Installs dependencies listed in `Project.toml`.
-     - `Pkg.precompile();`: Compiles packages for faster startup.
+
+   Our application is a simple web dashboard built with Dash (Dash.jl). The code for our application was based on an example from the [Dash.jl documentation](https://github.com/plotly/Dash.jl).
+
+
+2. **Installing the application dependancies:**<br>
+   
+   Next, we install the application dependencies. In our case we only have `Dash.jl` as a dependency. 
+   
+   To install it we can run the folling commands:
+
+   ```bash
+   julia --project
+   ]add Dash
+   ```
+
+   Then, exit out of julia terminal py pressing `Ctrl+D`.
+
+   Let's check out what this commands is doing:
+   - `julia --project`: Starts Julia's terminal interface usning the current directory as the Julia environment.
+   - `]`: Enters Julia's package manager interface.
+   - `add Dash`: Installs the Dash package as a dependency of the project.
+
+   Installing packages using the curent directory as the Julia environment will create two files called `Project.toml` and `Manifest.toml`. `Project.toml` holds dependency information and will be used later on in the containerization of our application.
 
 2. **Starting up the application:**<br>
-   Our application is a simple web dashboard built with Genie (GenieFramework.jl). Feel free to checking out the documentation for this framework and add things to our application.
+   
    
    Start the application by running the command below.
-   ```bash
-   julia --project -e "using GenieFramework; Genie.loadapp(); up(async=false);"
-   ```
-   We already saw what the `julia`, `--project` and `-e` are for. 
-   
-   Now, let's see what the julia script part is doing:
-   - `using GenieFramework`: Imports the GenieFramework package into the Julia environment.
-   - `Genie.loadapp()`: Loads the web application defined in `app.jl`.
-   - `up(async=false)`: Starts the web server in synchronous mode, blocking further commands until the server is stopped.
 
-   Once the command is executed we should see something similar to this in the output:
+   ```bash
+   julia --project app.jl
+   ```
+
+   Once the command is executed, we should see something similar to this in the output:
 
    ```bash 
-    ██████╗ ███████╗███╗   ██╗██╗███████╗    ███████╗
-   ██╔════╝ ██╔════╝████╗  ██║██║██╔════╝    ██╔════╝
-   ██║  ███╗█████╗  ██╔██╗ ██║██║█████╗      ███████╗
-   ██║   ██║██╔══╝  ██║╚██╗██║██║██╔══╝      ╚════██║
-   ╚██████╔╝███████╗██║ ╚████║██║███████╗    ███████║
-    ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═╝╚══════╝    ╚══════╝
-   
-   | Website  https://genieframework.com
-   | GitHub   https://github.com/genieframework
-   | Docs     https://learn.genieframework.com
-   | Discord  https://discord.com/invite/9zyZbD6J7H
-   | Twitter  https://twitter.com/essenciary
-   
-   Active env: DEV
-   
-   [ Info: 2024-04-05 14:54:41 Watching ["/your/path/to/julia-web-app-example"]
-   
-   Ready! 
-   
-   ┌ Info: 2024-04-05 14:54:43 
-   └ Web Server starting at http://127.0.0.1:8000 - press Ctrl/Cmd+C to stop the server. 
-   [ Info: 2024-04-05 14:54:43 Listening on: 127.0.0.1:8000, thread id: 1
+   [ Info: Listening on: 0.0.0.0:8080, thread id: 1
    ```
-    This means that the application started correctly an the dashboard should now be avaliable.
-
-3. **Take a look at the Dashboard**<br>
-   Open your browser and navigate to `http://localhost:8000`. 
+   This means that the application started correctly an the dashboard should now be avaliable.
    
-   After the page loads you should see the a a heading entitled 'A simple dashboard', an insteractive slider and an empty bar chart. Using the mouse to move the slider, we should notice that the bar chart starts updating in real time as the slider value changes.
+   Open your browser and navigate to `http://localhost:8080`. 
+   
+   After the page loads you should see a simple dashboard with a single bar chart.
+
+   To stop the application, click on the terminal window and press `Ctrl+C`.
+
+### 3.4. Testing the application
+
+Testing is a very important part of continuous integration workflow for software.
+
+Tests should cover all the behaviors of our application to ensure code correctness and to avoid unexpected failures in production.
+
+While we wont explore testing stratagies or methodologies in the scope of this tutorial, we will still include the test step in our CI workflow to exemplify how testing could be integrated in the proccess.
+
+To add tests to our project we can follow the steps below.
+
+1. Create a directory in the base of our repository named `test`.
+
+2. Create a file named `test_example.jl` inside the `test` directory and add the following code to it:
+   ```julia
+   # ./test/test_example.jl
+
+   using Test
+
+   @testset "Example Test" begin
+      @test 1 == 1
+   end
+   ```
+   This is a dummy test that always passes used just for the purpose of this example. Actual tests should assert the behavior of the actual code.
+
+3. Create a file named `runtests.jl` inside the `test` directory and add the following code to it:
+   ```julia
+   # ./test/runtests.jl
+
+   # Define the path to the directory containing the test files
+   test_dir = @__DIR__
+
+   # Automatically include and run all files in the directory that have 
+   # prefix 'test_' and sufix '.jl'
+   for test_file in readdir(test_dir)
+      if startswith(test_file, "test_") && endswith(test_file, ".jl")
+         include(joinpath(test_dir, test_file))
+      end
+   end
+   ```
+   This file serves as the entry point to run all our test files.
 
 
+To run our tests, we execute the following command to execute the `runtests.jl` file:
 
-### 3.4. Containerizing the application
+```bash
+julia --project -e "include(\"test/runtests.jl\")"
+```
+
+After the test run, we should see an output similar tp this:
+
+```bash
+Test Summary: | Pass  Total  Time
+Example Test  |    1      1  0.0s
+```
+
+If all tests show as `Pass` in an actual project, it should tell us that our code is correct and can be safely deployed.
+
+### 3.5. Containerizing the application
 
 We will use Docker to containerize the application. Docker provides very detailed [documentation](https://docs.docker.com/) that is essencial for any one wanting to start learning how to use it effectively.
 
 Containerizing the julia application means to build a Docker image that holds the application, all its dependencies and configuration into a single confined unit. We define how Docker builds this image with a file called [Dockerfile](./Dockerfile).
 
-After taking a look at the dockerfile and checking out what each line does by reading the comments, we can build our Docker image and lean how to use it by doing the folowing steps:
+To do this, let's create a file named `Dockerfile` in the base of our reoisitory and add the folowing code to it:
+
+```Dockerfile
+# Use the latest version of the Julia image from Docker Hub as the base image
+FROM julia:1.10.2-bullseye
+
+# Create a new user named 'jl' with a home directory and bash shell
+# Note: using a custom user to run our application instead of root results in better security
+RUN useradd --create-home --shell /bin/bash jl
+
+# Create a directory for the application in the 'jl' user's home directory
+RUN mkdir /home/jl/app
+
+# Set the working directory to the app directory
+WORKDIR /home/jl/app
+
+# Change the ownership of the home directory to the 'jl' user and group
+RUN chown -R jl:jl /home/jl/
+
+# Switch to the 'jl' user for running subsequent commands
+USER jl
+
+# Copy the project dependency file app directory in the container
+# Note: Copying this file and installing the dependencies before the rest of the code results in faster build times in subsequent builds
+COPY Project.toml .
+
+# Run a Julia command to set up the project: activate the project and instantiate to download its dependencies
+RUN julia --project -e "using Pkg; Pkg.instantiate();"
+
+# Copy the current directory's contents into the working directory in the container
+COPY . .
+
+# Precompile project's code and dependencies
+RUN julia --project -e "using Pkg; Pkg.precompile();"
+
+# Inform Docker that the container listens on ports 8000 at runtime
+EXPOSE 8000
+
+# Set environment variables used by Julia and the Genie app
+# JULIA_DEPOT_PATH  - Path to Julia packages
+# JULIA_REVISE      - Disable the Revise package to speed up startup
+# EARLYBIND         - Enable early binding for performance improvements
+ENV JULIA_DEPOT_PATH "/home/jl/.julia"
+ENV JULIA_REVISE "off"
+ENV EARLYBIND "true"
+
+# Define the command to run the Genie app when the container starts
+CMD ["julia", "--project", "app.jl"]
+```
+
+The `Dockerfile` defines the environment in which our application will run. It does the following things: 
+1. Uses `julia:1.10.2-bullseye` as the base Docker image so that we start with a working julia instalation preinstalled.
+2. Creates a user called `jl` for added security.
+3. Installs and instantiates the project's dependencies defined in `Project.toml`.
+4. Copies the source code and prepompiles it.
+5. Exposes port `8080` so we can access our application using the browser.
+6. Sets some `ENV` variables to optimize the julia runtime environment.
+7. Defines the command to start the application.
+
+We need to also create a file named `.dockerignore` to pervent Docker from copying unneeded files into our image. Let's create it and fill it with the following code:
+
+```Dockerfile
+# ./.dockerignore
+
+README.md
+LICENCE
+Dockerfile
+.dockerignore
+.gitignore
+.github/
+test/
+Manifest.toml
+```
+
+All the files and directories listed in `.dockerignore` will not be copyed into our image, reducing it's size.
+
+Next, we will build our Docker image and learn how to use it, by following the steps below:
 
 1. **Building the Docker Image:**<br>
    To build our image, run the folowing command:
@@ -190,16 +331,18 @@ After taking a look at the dockerfile and checking out what each line does by re
    
    The output should be something similat to this:
    
-   ```bash
+   ```
    REPOSITORY           TAG       IMAGE ID       CREATED        SIZE
    my-julia-dashboard   latest    de87785ae96e   3 hours ago    1.07GB
    ...                  ...       ...            ...            ...
    ```
 
-3. **Verify the Docker Image:**<br>
-   Now, that the Docker image has been created, it meand the application was containerized and can be deployed.
+   Now, that the Docker image has been created, it means that the application can be deployed as a container anywhere.
+
+3. **Deploying the Docker image locally:**<br>
    
    Let's run our newly created image as a Docker container and check if the Julia web dashboard still loads by running the following command:
+
    ```bash
    docker run --rm -p 8000:8000 my-julia-dashboard
    ```
@@ -212,3 +355,14 @@ After taking a look at the dockerfile and checking out what each line does by re
    - `-p 8000:8000`: 
      - Maps the host's port 8000 to the container's port 8000.
    - `my-julia-dashboard`: Specifies the name of the image to create a container from.
+
+   Now, navigate to `http://localhost:8080` and check if the dashboard is loaded correctly.
+
+   If the page loads, it means we have sucessfully depolyed our containerized application.
+
+   To stop the application, click on the terminal window and press `Ctrl+C`. The container will stop and be removed automaticaly.
+
+### 3.6. Creating the GitHub Actions CI Workflow
+
+We can now move on to the creation of a CI workflow that performs testing, containerization and distribution of our application automatically on every commit.
+

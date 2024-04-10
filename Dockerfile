@@ -1,5 +1,5 @@
 # Use the latest version of the Julia image from Docker Hub as the base image
-FROM julia:latest
+FROM julia:1.10.2-bullseye
 
 # Create a new user named 'jl' with a home directory and bash shell
 # Note: using a custom user to run our application instead of root results in better security
@@ -34,20 +34,12 @@ RUN julia --project -e "using Pkg; Pkg.precompile();"
 EXPOSE 8000
 
 # Set environment variables used by Julia and the Genie app
-# JULIA_DEPOT_PATH  # Path to Julia packages
-# JULIA_REVISE      # Disable the Revise package to speed up startup
-# GENIE_ENV         # Set the Genie environment to production
-# GENIE_HOST        # Make the Genie app listen on all network interfaces
-# PORT              # Set the HTTP port for the Genie app
-# WSPORT            # Set the WebSocket port for real-time communication
-# EARLYBIND         # Enable early binding for performance improvements
+# JULIA_DEPOT_PATH  - Path to Julia packages
+# JULIA_REVISE      - Disable the Revise package to speed up startup
+# EARLYBIND         - Enable early binding for performance improvements
 ENV JULIA_DEPOT_PATH "/home/jl/.julia"
-ENV JULIA_REVISE "off"                   
-ENV GENIE_ENV "prod"                     
-ENV GENIE_HOST "0.0.0.0"                 
-ENV PORT "8000"                          
-ENV WSPORT "8000"                        
-ENV EARLYBIND "true"                     
+ENV JULIA_REVISE "off"
+ENV EARLYBIND "true"
 
 # Define the command to run the Genie app when the container starts
-CMD ["julia", "--project", "-e", "using GenieFramework; Genie.loadapp(); up(async=false);"]
+CMD ["julia", "--project", "app.jl"]
