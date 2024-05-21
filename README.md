@@ -235,6 +235,7 @@ To do this, let's create a file named `Dockerfile` in the base of our reoisitory
 
 ```Dockerfile
 # Use the latest version of the Julia image from Docker Hub as the base image
+# See which versions of Julia are avaliable on https://hub.docker.com/_/julia/tags
 FROM julia:1.10.2-bullseye
 
 # Create a new user named 'jl' with a home directory and bash shell
@@ -305,7 +306,7 @@ test/
 Manifest.toml
 ```
 
-All the files and directories listed in `.dockerignore` will not be copyed into our image, reducing it's size.
+We should also add to `.dockerignore` files and directories related to data or other staric files that are not essencial to your application. All the files and directories listed in `.dockerignore` will not be copyed into our image, which reduces it's size.
 
 Next, we will build our Docker image and learn how to use it, by following the steps below:
 
@@ -325,11 +326,11 @@ Next, we will build our Docker image and learn how to use it, by following the s
 2. **Verify the Docker Image:**<br>
    We can see the image listed in the output of the following command:
    
-   ```bash
+   ```
    docker image ls
    ```
    
-   The output should be something similat to this:
+   The output should contain the image tha was created, similar to the output below:
    
    ```
    REPOSITORY           TAG       IMAGE ID       CREATED        SIZE
@@ -343,7 +344,7 @@ Next, we will build our Docker image and learn how to use it, by following the s
    
    Let's run our newly created image as a Docker container and check if the Julia web dashboard still loads by running the following command:
 
-   ```bash
+   ```
    docker run --rm -p 8000:8000 my-julia-dashboard
    ```
    
@@ -351,9 +352,8 @@ Next, we will build our Docker image and learn how to use it, by following the s
    
    - `docker`: Invokes the Docker command-line interface.
    - `run`: Runs a command in a new container.
-   - `--rm`: Automatically removes the container when it exits.
-   - `-p 8000:8000`: 
-     - Maps the host's port 8000 to the container's port 8000.
+   - `--rm`: Automatically removes the container when it stops running.
+   - `-p 8000:8000`: Maps the host's port 8000 to the container's port 8000.
    - `my-julia-dashboard`: Specifies the name of the image to create a container from.
 
    Now, navigate to `http://localhost:8080` and check if the dashboard is loaded correctly.
