@@ -32,7 +32,7 @@ Once everything is correctly installed and configured we can get started.
 
 ### 1. Creating a new repository
 
-First, lets create a new public repository named `julia-web-app-example` on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
+First, let's create a new public repository named `julia-web-app-example` on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
 
 Then, let's clone our new repository by running the following command in the terminal:
 
@@ -97,9 +97,9 @@ Now, lets take a look at what files we need to add to the project and what is th
 
 ### 3. The Julia application
 
-We will start by adding the Julia application to our project, installing its dependencies and running it to see if everything works. 
+We will start by adding the Julia application to our project, installing it's dependencies, and running it to see if everything works. 
 
-Let's do it by following these steps:
+Let's follow these steps:
 
 1. **Creating the `app.jl` file:**<br>
 
@@ -135,7 +135,7 @@ Let's do it by following these steps:
    
    Next, we install the application dependencies. In our case we only have `Dash.jl` as a dependency. 
    
-   To install it we can run the folling commands:
+   To install it, we can run the folling commands:
 
    ```bash
    julia --project
@@ -144,12 +144,13 @@ Let's do it by following these steps:
 
    Then, exit out of julia terminal py pressing `Ctrl+D`.
 
-   Let's check out what this commands is doing:
+   Let's see what this command is doing:
    - `julia --project`: Starts Julia's terminal interface usning the current directory as the Julia environment.
    - `]`: Enters Julia's package manager interface.
    - `add Dash`: Installs the Dash package as a dependency of the project.
 
-   Installing packages using the curent directory as the Julia environment will create two files called `Project.toml` and `Manifest.toml`. `Project.toml` holds dependency information and will be used later on in the containerization of our application.
+   > **Important!**<br>
+   > Installing packages using the curent directory as the Julia environment will create two files called `Project.toml` and `Manifest.toml`. `Project.toml` holds dependency information and will be used later on in the containerization of our application.
 
 2. **Starting up the application:**
    
@@ -161,24 +162,24 @@ Let's do it by following these steps:
 
    Once the command is executed, we should see something similar to this in the output:
 
-   ```bash 
+   ```
    [ Info: Listening on: 0.0.0.0:8080, thread id: 1
    ```
    This means that the application started correctly an the dashboard should now be avaliable.
    
    Open your browser and navigate to `http://localhost:8080`. 
-   
-   After the page loads you should see a simple dashboard with a single bar chart.
+    After the page loads you should see a simple dashboard with a single bar chart.
 
    To stop the application, click on the terminal window and press `Ctrl+C`.
 
 ### 4. Testing the application
 
-Testing is a very important part of continuous integration workflow for software.
+Testing is a very important part of software engeneering.
 
 Tests should cover all the behaviors of our application to ensure code correctness and to avoid unexpected failures in production.
 
-While we wont explore testing stratagies or methodologies in the scope of this tutorial, we will still include the test step in our CI workflow to exemplify how testing could be integrated in the proccess.
+> **Important!**<br>
+> While we won't explore testing stratagies or methodologies in the scope of this tutorial, we will still include the test step in our CI workflow to exemplify how testing could be integrated in the proccess.
 
 To add tests to our project we can follow the steps below.
 
