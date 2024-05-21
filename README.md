@@ -23,8 +23,8 @@ Make sure you have the following installed on your local machine:
 - [Git](https://git-scm.com/downloads)
 
 
-**Important!**<br>
-In order to publish your application to ghcr.io, Github Actions needs to authenticate to ghcr.io using `secrets.GITHUB_TOKEN`. Make sure you have the right permissions on your Gihub account by checking your respoitory settings. Read this [guide](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions) for instructions.
+>**Important!**<br>
+>In order to publish your application to ghcr.io, Github Actions needs to authenticate to ghcr.io using `secrets.GITHUB_TOKEN`. Make sure you have the right permissions on your Gihub account by checking your respoitory settings. Read this [guide](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions) for instructions.
 
 ## Getting Started
 
