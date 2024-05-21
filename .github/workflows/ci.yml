@@ -25,7 +25,7 @@ jobs:
         version: '1.10.2' # Specify the Julia version here; use '1.x' for the latest stable version
 
     # Prepare for testing
-    - name: Install Dependencies and precompile
+    - name: Install dependencies and precompile the application
       run: |
         julia --project -e " /
           using Pkg; /
@@ -48,9 +48,9 @@ jobs:
     # Build and tag your Docker application
     - name: Build and tag the Docker image
       run: |
-        docker build . --file Dockerfile --tag ghcr.io/aircentre/julia-web-app-example:${{ github.sha }}
+        docker build . --file Dockerfile --tag ghcr.io/aircentre/julia-web-app-example
 
     # Push the Docker image to GitHub Container Registry
-    - name: Push the Docker image to GHCR
+    - name: Push the Docker image to ghcr.io
       run: |
-        docker push ghcr.io/aircentre/julia-web-app-example:${{ github.sha }}
+        docker push ghcr.io/aircentre/julia-web-app-example

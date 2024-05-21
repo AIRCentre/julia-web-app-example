@@ -270,10 +270,11 @@ RUN julia --project -e "using Pkg; Pkg.precompile();"
 # Inform Docker that the container listens on ports 8000 at runtime
 EXPOSE 8000
 
-# Set environment variables used by Julia and the Genie app
+# Set environment variables to optimize Julia:
 # JULIA_DEPOT_PATH  - Path to Julia packages
 # JULIA_REVISE      - Disable the Revise package to speed up startup
 # EARLYBIND         - Enable early binding for performance improvements
+
 ENV JULIA_DEPOT_PATH "/home/jl/.julia"
 ENV JULIA_REVISE "off"
 ENV EARLYBIND "true"
@@ -291,11 +292,9 @@ The `Dockerfile` defines the environment in which our application will run. It d
 6. Sets some `ENV` variables to optimize the julia runtime environment.
 7. Defines the command to start the application.
 
-We need to also create a file named `.dockerignore` to pervent Docker from copying unneeded files into our image. Let's create it and fill it with the following code:
+We need to also create a file named `.dockerignore` to pervent Docker from copying unnecessary files into our image. Let's create it and fill it with the following code:
 
 ```Dockerfile
-# ./.dockerignore
-
 README.md
 LICENCE
 Dockerfile
@@ -333,8 +332,8 @@ Next, we will build our Docker image and learn how to use it, by following the s
    The output should contain the image tha was created, similar to the output below:
    
    ```
-   REPOSITORY           TAG       IMAGE ID       CREATED        SIZE
-   my-julia-dashboard   latest    de87785ae96e   3 hours ago    1.07GB
+   REPOSITORY           TAG       IMAGE ID       CREATED           SIZE
+   my-julia-dashboard   latest    de87785ae96e   17 seconds ago    804MB
    ...                  ...       ...            ...            ...
    ```
 
@@ -365,4 +364,100 @@ Next, we will build our Docker image and learn how to use it, by following the s
 ### 3.6. Creating the GitHub Actions CI Workflow
 
 We can now move on to the creation of a CI workflow that performs testing, containerization and distribution of our application automatically on every commit.
+
+The workflow will run the commands we ran previously on our local machine to create our containerized application by executting the following steps:
+ - Setup julia
+ - Install and precompile the application
+ - Run tests
+ - Build the Docker image
+ - Push the image to `ghcr.io`
+
+The difference is that the commands will all be ran automatically within GitHub Actions.
+
+To make this work we need to create a new file called `ci.yml` inside the `.github/workflows/` directory. Let's create the directory first by runing the following command:
+```
+mkdir -p .github/workflows/
+```
+
+Now add the file `ci.yml` inside the `.github/workflows/` directory and add the folowing to it:
+```yml
+name: CI/CD Workflow
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    
+    # Commits with 'no-ci' in the message prevent the workflow from running
+    # This is useful when commiting non code files, like the README for example
+    if: ${{ !contains(github.event.head_commit.message, 'no-ci') }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Necessary for commits message check
+
+     # Set up Julia
+    - name: Set up Julia
+      uses: julia-actions/setup-julia@v2
+      with:
+        version: '1.10.2' # Specify the Julia version here; use '1.x' for the latest stable version
+
+    # Prepare for testing
+    - name: Install Dependencies and precompile
+      run: |
+        julia --project -e " /
+          using Pkg; /
+          Pkg.instantiate(); /
+          Pkg.precompile(); "
+
+    # Run the application tests
+    - name: Run tests
+      run: |
+        julia --project -e "include(\"test/runtests.jl\")"
+
+    # Log in to GitHub Container Registry
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Build and tag the Docker image
+    - name: Build and tag the Docker image
+      run: |
+        docker build . --file Dockerfile --tag ghcr.io/your-github-username/your-application-name:${{ github.sha }}
+
+    # Push the Docker image to GitHub Container Registry
+    - name: Push the Docker image to ghcr.io
+      run: |
+        docker push ghcr.io/your-github-username/your-application-name:${{ github.sha }}
+
+```
+
+Dont forget to replace the `your-github-username` and `your-application-name` on the Docker commands by the actual values and commit the changes to the main branch of the repository. Once the commit is pushed, we should see the workflow start running on the `Actions` section of your repository on GitHub.
+
+If everything goes well, after the CI workflow finishes the application should be avaliable as a Docker image on GitHub Container Registry, ready to be deployed anywhere.
+
+To test it out, let's run our recently published applicaton directly from ghcr.io and see if our Dashboard loads correctly by running the following command (replace `your-github-username` and `your-application-name` with the atual values):
+```
+docker run --rm -p 8000:8000 ghcr.io/your-github-username/your-application-name
+```
+
+After the container starts, open your browser and navigate to `http://localhost:8080`. 
+
+After the page loads you should see the dashboard.
+
+To stop the container, click on the terminal window and press `Ctrl+C`.
+
+
+
+
+
+
 
