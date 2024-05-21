@@ -28,7 +28,7 @@ Make sure you have the following installed on your local machine:
 
 ## Getting Started
 
-Once we make sure that everything is correctly installed and configured, let's dive in.
+Once everything is correctly installed and configured we can get started.
 
 ### 1. Creating a new repository
 
