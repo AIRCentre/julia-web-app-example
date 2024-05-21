@@ -480,7 +480,7 @@ We welcome contributors to this project! Please submit improvements and bugfixes
 
 2. **Clone the repository**: Once you have forked the repository, clone it to your local machine using the following command:
    ```
-   git clone https://github.com/your-username/repository-name.git
+   git clone https://github.com/AIRCentre/julia-web-app-example.git
    ```
 
 3. **Create a new branch**: Create a new branch for your changes to ensure that your `main` branch remains clean and stable:
