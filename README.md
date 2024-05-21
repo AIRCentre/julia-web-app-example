@@ -32,13 +32,15 @@ Once everything is correctly installed and configured we can get started.
 
 ### 1. Creating a new repository
 
-First, lets create a new public repository on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
+First, lets create a new public repository named `julia-web-app-example` on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
 
-Then, let's clone our new repository by running the following command in the terminal (Important! Replace 'YourUsername' in the URL with your actual GitHub username):
+Then, let's clone our new repository by running the following command in the terminal:
 
 ```bash
-git clone https://github.com/YourUsername/julia-web-app-example.git
+git clone https://github.com/your-github-username/julia-web-app-example.git
 ```
+> **Important!**<br>
+> Replace `your-github-username` with the actual username.
 
 Then, change directories to move into the project's directory by running the following command:
 
