@@ -4,7 +4,7 @@
 
 This repository is a an example to be used as a tutorial for building, packaging and destributing a full-stack web application built with the Julia progrmming language. It covers the process of containerization, utilizing Docker and GitHub Actions, and distribution of the application utilizing Github Container registry (ghcr.io).
 
-## 1. Overview
+## Overview
 
 In this tutorial, we delve into the process of containerizing a Julia web application utilizing Docker and GitHub Actions, emphasizing the importance of containerization for simplified distribution and deployment. 
 
@@ -14,7 +14,7 @@ GitHub Actions and Docker play very important roles by automating CI/CD workflow
 
 By folowing the tutorial we will see in detail how all of this tecnologies are employed to containerize, distribute and deploy a Julia web appication.
 
-## 2. Prerequisits
+## Prerequisits
 
 Make sure you have the following installed on your local machine:
 
@@ -26,11 +26,11 @@ Make sure you have the following installed on your local machine:
 **Important!**<br>
 In order to publish your application to ghcr.io, Github Actions needs to authenticate to ghcr.io using `secrets.GITHUB_TOKEN`. Make sure you have the right permissions on your Gihub account by checking your respoitory settings. Read this [guide](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions) for instructions.
 
-## 3. Getting Started
+## Getting Started
 
 Once we make sure that everything is correctly installed and configured, let's dive in.
 
-### 3.1. Creating a new repository
+### 1. Creating a new repository
 
 First, lets create a new public repository on [GitHub](https://github.com) by following the instructions in the [documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository).
 
@@ -43,13 +43,13 @@ git clone https://github.com/YourUsername/julia-web-app-example.git
 Then, change directories to move into the project's directory by running the following command:
 
 ```bash
- cd julia-web-app-example
+cd julia-web-app-example
 ```
 
-**Important!**<br>
-To avoid frequent errors having to do with in which directory the commands are run in, all the commands in this tutorial should be run at the root of the project, i.e., at the base of the `julia-web-app-example` directory.
+>**Important!**<br>
+>To avoid frequent errors having to do with in which directory the commands are run in, all the commands in this tutorial should be run at the root of the project, i.e., at the base of the `julia-web-app-example` directory.
 
-### 3.2. Getting familiarized with the Project's structure
+### 2. Project's structure
 
 Now, lets take a look at what files we need to add to the project and what is the purpose of each.
 
@@ -82,15 +82,18 @@ Now, lets take a look at what files we need to add to the project and what is th
 
 - **LICENSE** - The software license under which the project is distributed.
 
-- **Project.toml** - Julia's package manager configuration file that specifies project dependencies.
+- **Project.toml** - Julia's package manager configuration file that specifies project dependencies. Julia creates this file automatically when adding dependencies to the project.
 
-- **README.md** - An overview of the project, including descriptions, setup instructions, usage examples, and other essential information for users or contributors.
+- **README.md** - This file usually serves as an overview of the project, including descriptions, setup instructions, usage examples, and other essential information for users or contributors. In this example, the readme file is this tutorial.
 
-- **test/runtests.jl** - Orchestrates the execution of the project's automated tests.
+- **test/runtests.jl** - Orchestrates the execution of the project's tests.
 
 - **test/test_example.jl** - Contains a dummy test to exemplify how tests are declared.
 
-### 3.3. The Julia application
+> **Important!**<br>
+> We don't need to create all the files right away! We will create them one by one as we progress through the tutorial.
+
+### 3. The Julia application
 
 We will start by adding the Julia application to our project, installing its dependencies and running it to see if everything works. 
 
@@ -126,7 +129,7 @@ Let's do it by following these steps:
    Our application is a simple web dashboard built with Dash (Dash.jl). The code for our application was based on an example from the [Dash.jl documentation](https://github.com/plotly/Dash.jl).
 
 
-2. **Installing the application dependancies:**<br>
+2. **Installing the application dependancies:**
    
    Next, we install the application dependencies. In our case we only have `Dash.jl` as a dependency. 
    
@@ -146,8 +149,7 @@ Let's do it by following these steps:
 
    Installing packages using the curent directory as the Julia environment will create two files called `Project.toml` and `Manifest.toml`. `Project.toml` holds dependency information and will be used later on in the containerization of our application.
 
-2. **Starting up the application:**<br>
-   
+2. **Starting up the application:**
    
    Start the application by running the command below.
 
@@ -168,7 +170,7 @@ Let's do it by following these steps:
 
    To stop the application, click on the terminal window and press `Ctrl+C`.
 
-### 3.4. Testing the application
+### 4. Testing the application
 
 Testing is a very important part of continuous integration workflow for software.
 
@@ -190,7 +192,7 @@ To add tests to our project we can follow the steps below.
       @test 1 == 1
    end
    ```
-   This is a dummy test that always passes used just for the purpose of this example. Actual tests should assert the behavior of the actual code.
+   This is a dummy test that always passes just for the purpose of this example. Actual tests should assert the behavior of the code.
 
 3. Create a file named `runtests.jl` inside the `test` directory and add the following code to it:
    ```julia
@@ -199,8 +201,8 @@ To add tests to our project we can follow the steps below.
    # Define the path to the directory containing the test files
    test_dir = @__DIR__
 
-   # Automatically include and run all files in the directory that have 
-   # prefix 'test_' and sufix '.jl'
+   # Automatically include and run all files in the directory 
+   # that have prefix 'test_' and sufix '.jl'
    for test_file in readdir(test_dir)
       if startswith(test_file, "test_") && endswith(test_file, ".jl")
          include(joinpath(test_dir, test_file))
@@ -225,7 +227,7 @@ Example Test  |    1      1  0.0s
 
 If all tests show as `Pass` in an actual project, it should tell us that our code is correct and can be safely deployed.
 
-### 3.5. Containerizing the application
+### 5. Containerizing the application
 
 We will use Docker to containerize the application. Docker provides very detailed [documentation](https://docs.docker.com/) that is essencial for any one wanting to start learning how to use it effectively.
 
@@ -234,6 +236,8 @@ Containerizing the julia application means to build a Docker image that holds th
 To do this, let's create a file named `Dockerfile` in the base of our reoisitory and add the folowing code to it:
 
 ```Dockerfile
+#./Dockerfile
+
 # Use the latest version of the Julia image from Docker Hub as the base image
 # See which versions of Julia are avaliable on https://hub.docker.com/_/julia/tags
 FROM julia:1.10.2-bullseye
@@ -295,6 +299,8 @@ The `Dockerfile` defines the environment in which our application will run. It d
 We need to also create a file named `.dockerignore` to pervent Docker from copying unnecessary files into our image. Let's create it and fill it with the following code:
 
 ```Dockerfile
+# ./.dockerignore
+
 README.md
 LICENCE
 Dockerfile
@@ -339,7 +345,7 @@ Next, we will build our Docker image and learn how to use it, by following the s
 
    Now, that the Docker image has been created, it means that the application can be deployed as a container anywhere.
 
-3. **Deploying the Docker image locally:**<br>
+3. **Running the Docker image locally:**<br>
    
    Let's run our newly created image as a Docker container and check if the Julia web dashboard still loads by running the following command:
 
@@ -361,11 +367,11 @@ Next, we will build our Docker image and learn how to use it, by following the s
 
    To stop the application, click on the terminal window and press `Ctrl+C`. The container will stop and be removed automaticaly.
 
-### 3.6. Creating the GitHub Actions CI Workflow
+### 6. Creating the GitHub Actions CI Workflow
 
 We can now move on to the creation of a CI workflow that performs testing, containerization and distribution of our application automatically on every commit.
 
-The workflow will run the commands we ran previously on our local machine to create our containerized application by executting the following steps:
+The workflow will run the commands we ran previously on our local machine to create our containerized application by performing the following steps:
  - Setup julia
  - Install and precompile the application
  - Run tests
@@ -379,9 +385,11 @@ To make this work we need to create a new file called `ci.yml` inside the `.gith
 mkdir -p .github/workflows/
 ```
 
-Now add the file `ci.yml` inside the `.github/workflows/` directory and add the folowing to it:
+Now create the file `ci.yml` inside the `.github/workflows/` directory and add the folowing lines to it:
 ```yml
-name: CI/CD Workflow
+# ./github/workflows/ci.yml
+
+name: CI Workflow
 
 on: 
   push:
@@ -431,31 +439,76 @@ jobs:
     # Build and tag the Docker image
     - name: Build and tag the Docker image
       run: |
-        docker build . --file Dockerfile --tag ghcr.io/your-github-username/your-application-name:${{ github.sha }}
+        docker build . --file Dockerfile --tag ghcr.io/your-github-username/julia-web-app-example
 
     # Push the Docker image to GitHub Container Registry
     - name: Push the Docker image to ghcr.io
       run: |
-        docker push ghcr.io/your-github-username/your-application-name:${{ github.sha }}
+        docker push ghcr.io/your-github-username/julia-web-app-example
 
 ```
+>**Important!**<br>
+>Replace `your-github-username` with the actual username.
 
-Dont forget to replace the `your-github-username` and `your-application-name` on the Docker commands by the actual values and commit the changes to the main branch of the repository. Once the commit is pushed, we should see the workflow start running on the `Actions` section of your repository on GitHub.
+Now we can commit the changes to the main branch of the repository. Once the commit is pushed, we should see the workflow start running on the `Actions` section of your repository on GitHub.
 
-If everything goes well, after the CI workflow finishes the application should be avaliable as a Docker image on GitHub Container Registry, ready to be deployed anywhere.
+If everything goes well, after the CI workflow finishes the application should be avaliable as a Docker image on `ghcr.io`, ready to be deployed anywhere.
 
-To test it out, let's run our recently published applicaton directly from ghcr.io and see if our Dashboard loads correctly by running the following command (replace `your-github-username` and `your-application-name` with the atual values):
+To test it out, let's run our recently published applicaton directly from ghcr.io and see if our Dashboard loads correctly by running the following command:
+
 ```
-docker run --rm -p 8000:8000 ghcr.io/your-github-username/your-application-name
+docker run --rm -p 8000:8000 ghcr.io/your-github-username/julia-web-app-example
 ```
 
-After the container starts, open your browser and navigate to `http://localhost:8080`. 
+>**Important!**<br>
+>Replace `your-github-username` with the actual username.
 
-After the page loads you should see the dashboard.
+After the container starts, open your browser and navigate to `http://localhost:8080`. When the page loads, you should see the dashboard.
 
 To stop the container, click on the terminal window and press `Ctrl+C`.
 
+And, with that, we have finished the tutorial!
 
+
+## Contributing
+
+We welcome contributors to this project! Please submit improvements and bugfixes so that the tutorial gets even better! 
+
+### How to Contribute
+
+1. **Fork the repository**: Click on the "Fork" button at the top right corner of this page to create a copy of this repository under your own GitHub account.
+
+2. **Clone the repository**: Once you have forked the repository, clone it to your local machine using the following command:
+   ```
+   git clone https://github.com/your-username/repository-name.git
+   ```
+
+3. **Create a new branch**: Create a new branch for your changes to ensure that your `main` branch remains clean and stable:
+   ```
+   git checkout -b your-branch-name
+   ```
+
+4. **Make your changes**: Make the necessary changes to the codebase.
+
+5. **Commit your changes**: Once you have made your changes, commit them to your branch:
+   ```
+   git add .
+   git commit -m "Description of your changes"
+   ```
+
+6. **Push your changes**: Push your changes to your forked repository:
+   ```
+   git push origin your-branch-name
+   ```
+
+7. **Create a Pull Request**: Go to the original repository on GitHub and click on the "New Pull Request" button. Fill out the necessary details and submit your pull request for review.
+
+
+### License
+
+By contributing to this project, you agree that your contributions will be licensed under the GPL-3.0 License.
+
+Thank you for contributing to this project!
 
 
 
