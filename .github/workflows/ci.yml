@@ -35,7 +35,7 @@ jobs:
     # Run your application's tests
     - name: Run tests
       run: |
-        julia --project -e "include(\"test/runtests.jl\")"
+        julia --project test/runtests.jl
 
     # Log in to GitHub Container Registry
     - name: Log in to GitHub Container Registry

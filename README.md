@@ -128,7 +128,7 @@ Let's follow these steps:
    run_server(app, "0.0.0.0", 8080)
    ```
 
-   Our application is a simple web dashboard built with Dash (Dash.jl). The code for our application was based on an example from the [Dash.jl documentation](https://github.com/plotly/Dash.jl).
+   Our application is a simple web dashboard built with Julia and `Dash.jl`. The code for our application was based on an example from the Dash.jl [documentation](https://github.com/plotly/Dash.jl).
 
 
 2. **Installing the application dependancies:**
@@ -142,10 +142,10 @@ Let's follow these steps:
    ]add Dash
    ```
 
-   Then, exit out of julia terminal py pressing `Ctrl+D`.
+   Then, exit out of Julia py pressing `Ctrl+D`.
 
-   Let's see what this command is doing:
-   - `julia --project`: Starts Julia's terminal interface usning the current directory as the Julia environment.
+   Let's see what these commands are doing:
+   - `julia --project`: Starts Julia's terminal interface using the current directory as the Julia environment.
    - `]`: Enters Julia's package manager interface.
    - `add Dash`: Installs the Dash package as a dependency of the project.
 
@@ -160,12 +160,15 @@ Let's follow these steps:
    julia --project app.jl
    ```
 
-   Once the command is executed, we should see something similar to this in the output:
+   This command executes the code in `app.jl`. The `--project` flag tells Julia to use the current directory as the Julia environment. 
+
+   Once the command is executed, we should see something similar to this:
 
    ```
    [ Info: Listening on: 0.0.0.0:8080, thread id: 1
    ```
-   This means that the application started correctly an the dashboard should now be avaliable.
+   
+   This output means that the application started correctly an the dashboard should now be avaliable.
    
    Open your browser and navigate to `http://localhost:8080`. 
     After the page loads you should see a simple dashboard with a single bar chart.
@@ -174,20 +177,21 @@ Let's follow these steps:
 
 ### 4. Testing the application
 
-Testing is a very important part of software engeneering.
-
-Tests should cover all the behaviors of our application to ensure code correctness and to avoid unexpected failures in production.
+Testing is a very important part of software engeneering. Tests should cover all the behaviors of our application to ensure code correctness and to avoid unexpected failures in production.
 
 > **Important!**<br>
-> While we won't explore testing stratagies or methodologies in the scope of this tutorial, we will still include the test step in our CI workflow to exemplify how testing could be integrated in the proccess.
+> While we won't explore testing stratagies or methodologies here, we will still include the test step in our CI workflow to show how testing could be integrated in the proccess.
 
 To add tests to our project we can follow the steps below.
 
 1. Create a directory in the base of our repository named `test`.
 
 2. Create a file named `test_example.jl` inside the `test` directory and add the following code to it:
+
    ```julia
    # ./test/test_example.jl
+   # A dummy test that always passes. Used only for the purpose of this  
+   # example. Actual tests should assert the behavior of the code
 
    using Test
 
@@ -195,11 +199,11 @@ To add tests to our project we can follow the steps below.
       @test 1 == 1
    end
    ```
-   This is a dummy test that always passes just for the purpose of this example. Actual tests should assert the behavior of the code.
 
 3. Create a file named `runtests.jl` inside the `test` directory and add the following code to it:
    ```julia
    # ./test/runtests.jl
+   # The entry point to run all of the test files
 
    # Define the path to the directory containing the test files
    test_dir = @__DIR__
@@ -212,13 +216,11 @@ To add tests to our project we can follow the steps below.
       end
    end
    ```
-   This file serves as the entry point to run all our test files.
-
 
 To run our tests, we execute the following command to execute the `runtests.jl` file:
 
 ```bash
-julia --project -e "include(\"test/runtests.jl\")"
+julia --project test/runtests.jl
 ```
 
 After the test run, we should see an output similar tp this:
@@ -229,6 +231,8 @@ Example Test  |    1      1  0.0s
 ```
 
 If all tests show as `Pass` in an actual project, it should tell us that our code is correct and can be safely deployed.
+
+To add a new test, we can simply create a new file that starts with `test_` inside the `tests` directory and write the test code in Julia. Then, when `runtests.jl` is executed, the new test will be automatically picked up. 
 
 ### 5. Containerizing the application
 
