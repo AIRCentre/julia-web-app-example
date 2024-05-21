@@ -49,7 +49,7 @@ cd julia-web-app-example
 ```
 
 >**Important!**<br>
->To avoid frequent errors having to do with in which directory the commands are run in, all the commands in this tutorial should be run at the root of the project, i.e., at the base of the `julia-web-app-example` directory.
+>To avoid errors, all the commands in this tutorial should be run at the root of the project, i.e., at the base of the `julia-web-app-example` directory.
 
 ### 2. Project's structure
 
