@@ -236,11 +236,11 @@ To add a new test, we can simply create a new file that starts with `test_` insi
 
 ### 5. Containerizing the application
 
-We will use Docker to containerize the application. Docker provides very detailed [documentation](https://docs.docker.com/) that is essencial for any one wanting to start learning how to use it effectively.
+We will use Docker to containerize the application. Docker provides very detailed [documentation](https://docs.docker.com/) that is essencial for learning how to use it effectively.
 
 Containerizing the julia application means to build a Docker image that holds the application, all its dependencies and configuration into a single confined unit. We define how Docker builds this image with a file called [Dockerfile](./Dockerfile).
 
-To do this, let's create a file named `Dockerfile` in the base of our reoisitory and add the folowing code to it:
+To do this, let's create a file named `Dockerfile` in the base of our repository and add the folowing lines to it:
 
 ```Dockerfile
 #./Dockerfile
@@ -250,7 +250,8 @@ To do this, let's create a file named `Dockerfile` in the base of our reoisitory
 FROM julia:1.10.2-bullseye
 
 # Create a new user named 'jl' with a home directory and bash shell
-# Note: using a custom user to run our application instead of root results in better security
+# Note: using a custom user to run our application instead of root is 
+# a security best practice
 RUN useradd --create-home --shell /bin/bash jl
 
 # Create a directory for the application in the 'jl' user's home directory
@@ -265,21 +266,23 @@ RUN chown -R jl:jl /home/jl/
 # Switch to the 'jl' user for running subsequent commands
 USER jl
 
-# Copy the project dependency file app directory in the container
-# Note: Copying this file and installing the dependencies before the rest of the code results in faster build times in subsequent builds
+# Copy the project dependency file to the app directory in the container
+# Note: Copying this file and installing the dependencies before the rest 
+# of the code results in faster build times in subsequent builds
 COPY Project.toml .
 
-# Run a Julia command to set up the project: activate the project and instantiate to download its dependencies
+# Run a Julia command to set up the project: activate the project and instantiate 
+# to install it's dependencies
 RUN julia --project -e "using Pkg; Pkg.instantiate();"
 
 # Copy the current directory's contents into the working directory in the container
 COPY . .
 
-# Precompile project's code and dependencies
+# Precompile the application code and dependencies
 RUN julia --project -e "using Pkg; Pkg.precompile();"
 
-# Inform Docker that the container listens on ports 8000 at runtime
-EXPOSE 8000
+# Inform Docker that the container listens on ports 8080 at runtime
+EXPOSE 8080
 
 # Set environment variables to optimize Julia:
 # JULIA_DEPOT_PATH  - Path to Julia packages
@@ -303,7 +306,7 @@ The `Dockerfile` defines the environment in which our application will run. It d
 6. Sets some `ENV` variables to optimize the julia runtime environment.
 7. Defines the command to start the application.
 
-We need to also create a file named `.dockerignore` to pervent Docker from copying unnecessary files into our image. Let's create it and fill it with the following code:
+We need to also create a file named `.dockerignore` to pervent Docker from copying unnecessary files into our image. Let's create it and fill it with the following lines:
 
 ```Dockerfile
 # ./.dockerignore
@@ -317,8 +320,8 @@ Dockerfile
 test/
 Manifest.toml
 ```
-
-We should also add to `.dockerignore` files and directories related to data or other staric files that are not essencial to your application. All the files and directories listed in `.dockerignore` will not be copyed into our image, which reduces it's size.
+> **Important!**<br>
+> We should also add to `.dockerignore` files and directories related to data or other staric files that are not essencial to your application. All the files and directories listed in `.dockerignore` will not be copied to the docker image, which reduces it's size.
 
 Next, we will build our Docker image and learn how to use it, by following the steps below:
 
@@ -333,7 +336,7 @@ Next, we will build our Docker image and learn how to use it, by following the s
    - `build`: Builds a Docker image from a Dockerfile.
    - `-t`: Tags the built image.
      - `my-julia-dashboard`: Specifies the tag name for the image, so we can identify it.
-   - `.`: Indicates the current directory as the build context, where Docker looks for the `Dockerfile`.
+   - `.`: Indicates the current directory as the build context, where Docker will look for the `Dockerfile`.
 
 2. **Verify the Docker Image:**<br>
    We can see the image listed in the output of the following command:
@@ -350,49 +353,47 @@ Next, we will build our Docker image and learn how to use it, by following the s
    ...                  ...       ...            ...            ...
    ```
 
-   Now, that the Docker image has been created, it means that the application can be deployed as a container anywhere.
+   Now, that the Docker image has been created, it means that the application can be deployed as a container.
 
 3. **Running the Docker image locally:**<br>
    
-   Let's run our newly created image as a Docker container and check if the Julia web dashboard still loads by running the following command:
+   Let's run our newly created image as a Docker container and check if the Julia web dashboard still runs correctly by running the following command:
 
    ```
-   docker run --rm -p 8000:8000 my-julia-dashboard
+   docker run --rm -p 8080:8080 my-julia-dashboard
    ```
    
-   Breaking down the command we can take a look at it more closely:
+   Breaking down the command we can see what it's doing:
    
    - `docker`: Invokes the Docker command-line interface.
    - `run`: Runs a command in a new container.
    - `--rm`: Automatically removes the container when it stops running.
-   - `-p 8000:8000`: Maps the host's port 8000 to the container's port 8000.
+   - `-p 8080:8080`: Maps the host's port 8080 to the container's port 8080.
    - `my-julia-dashboard`: Specifies the name of the image to create a container from.
 
-   Now, navigate to `http://localhost:8080` and check if the dashboard is loaded correctly.
-
-   If the page loads, it means we have sucessfully depolyed our containerized application.
+   Now, navigate to `http://localhost:8080` and check if the dashboard shows up correctly. If it does, it means we have sucessfully depolyed our containerized application.
 
    To stop the application, click on the terminal window and press `Ctrl+C`. The container will stop and be removed automaticaly.
 
 ### 6. Creating the GitHub Actions CI Workflow
 
-We can now move on to the creation of a CI workflow that performs testing, containerization and distribution of our application automatically on every commit.
+We can now move on to the creation of a CI workflow that performs the testing, containerization and distribution of our application automatically on every commit.
 
 The workflow will run the commands we ran previously on our local machine to create our containerized application by performing the following steps:
- - Setup julia
- - Install and precompile the application
- - Run tests
- - Build the Docker image
- - Push the image to `ghcr.io`
+ 1. Setup julia
+ 2. Install and precompile the application
+ 3. Run tests
+ 4. Build the Docker image
+ 5. Push the image to `ghcr.io`
 
-The difference is that the commands will all be ran automatically within GitHub Actions.
+The difference is that the commands will all run automatically within GitHub Actions.
 
-To make this work we need to create a new file called `ci.yml` inside the `.github/workflows/` directory. Let's create the directory first by runing the following command:
+To make this work, we need to create a new file called `ci.yml` inside a directory named `.github/workflows/`. Let's create the directory first by runing the following command:
 ```
 mkdir -p .github/workflows/
 ```
 
-Now create the file `ci.yml` inside the `.github/workflows/` directory and add the folowing lines to it:
+Now, create the file `ci.yml` inside the `.github/workflows/` directory and add the folowing lines to it:
 ```yml
 # ./github/workflows/ci.yml
 
@@ -407,7 +408,7 @@ jobs:
   build_and_push:
     runs-on: ubuntu-latest
     
-    # Commits with 'no-ci' in the message prevent the workflow from running
+    # Commits that contain 'no-ci' in the message prevent the workflow from running
     # This is useful when commiting non code files, like the README for example
     if: ${{ !contains(github.event.head_commit.message, 'no-ci') }}
     
@@ -433,7 +434,7 @@ jobs:
     # Run the application tests
     - name: Run tests
       run: |
-        julia --project -e "include(\"test/runtests.jl\")"
+        julia --project test/runtests.jl
 
     # Log in to GitHub Container Registry
     - name: Log in to GitHub Container Registry
@@ -487,13 +488,17 @@ We welcome contributors to this project! Please submit improvements and bugfixes
 
 2. **Clone the repository**: Once you have forked the repository, clone it to your local machine using the following command:
    ```
-   git clone https://github.com/AIRCentre/julia-web-app-example.git
+   git clone https://github.com/your-github-username/julia-web-app-example.git
    ```
+   >**Important!**<br>
+   >Replace `your-github-username` with the actual username.
 
 3. **Create a new branch**: Create a new branch for your changes to ensure that your `main` branch remains clean and stable:
    ```
    git checkout -b your-branch-name
    ```
+   >**Important!**<br>
+   >Replace `your-branch-name` with the actual name of your choice.
 
 4. **Make your changes**: Make the necessary changes to the codebase.
 
@@ -507,6 +512,8 @@ We welcome contributors to this project! Please submit improvements and bugfixes
    ```
    git push origin your-branch-name
    ```
+   >**Important!**<br>
+   >Replace `your-branch-name` with the actual name of your choice.
 
 7. **Create a Pull Request**: Go to the original repository on GitHub and click on the "New Pull Request" button. Fill out the necessary details and submit your pull request for review.
 
