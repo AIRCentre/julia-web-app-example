@@ -223,7 +223,7 @@ To run our tests, we execute the following command to execute the `runtests.jl` 
 julia --project test/runtests.jl
 ```
 
-After the test run, we should see an output similar tp this:
+After the test run, we should see an output similar to this:
 
 ```bash
 Test Summary: | Pass  Total  Time
