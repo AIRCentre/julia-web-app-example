@@ -251,7 +251,7 @@ FROM julia:1.10.2-bullseye
 
 # Create a new user named 'jl' with a home directory and bash shell
 # Note: using a custom user to run our application instead of root is 
-# a security best practice
+# a security bestpractice
 RUN useradd --create-home --shell /bin/bash jl
 
 # Create a directory for the application in the 'jl' user's home directory
@@ -293,7 +293,7 @@ ENV JULIA_DEPOT_PATH "/home/jl/.julia"
 ENV JULIA_REVISE "off"
 ENV EARLYBIND "true"
 
-# Define the command to run the Genie app when the container starts
+# Define the command to run the application when the container starts
 CMD ["julia", "--project", "app.jl"]
 ```
 
