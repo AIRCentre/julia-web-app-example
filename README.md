@@ -465,7 +465,7 @@ If everything goes well, after the CI workflow finishes the application should b
 To test it out, let's run our recently published applicaton directly from ghcr.io and see if our Dashboard loads correctly by running the following command:
 
 ```
-docker run --rm -p 8000:8000 ghcr.io/your-github-username/julia-web-app-example
+docker run --rm -p 8080:8080 ghcr.io/your-github-username/julia-web-app-example
 ```
 
 >**Important!**<br>
